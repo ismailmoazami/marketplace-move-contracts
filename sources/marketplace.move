@@ -19,6 +19,7 @@ public struct Listing has key, store{
 
 const ENotEnoughValue: u64 = 0;
 const ENotOwner: u64 = 1;
+const EZeroValue: u64 = 2;
 
 public fun list<T: key + store, COIN>(
     marketplace: &mut Marketplace<COIN>, 
@@ -96,4 +97,20 @@ public fun buy_item<T: key + store, COIN>(
         ),
         ctx.sender()
     );
+}
+
+fun withdraw_money<COIN>(marketplace: &mut Marketplace<COIN>, ctx: &TxContext): Coin<COIN> {
+    let total_value = marketplace.payments.borrow(ctx.sender()).value();
+    assert!(total_value > 0, EZeroValue);
+
+    marketplace.payments.remove(ctx.sender())
+}
+
+#[allow(lint(self_transfer))]
+public fun withdraw<COIN>(marketplace: &mut Marketplace<COIN>, ctx: &mut TxContext) {
+    sui::transfer::public_transfer(
+        withdraw_money<COIN>(marketplace, ctx),
+        ctx.sender()
+    );
+    
 }
