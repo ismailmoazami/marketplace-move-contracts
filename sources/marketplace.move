@@ -17,11 +17,19 @@ public struct Listing has key, store{
     owner: address
 }
 
+public struct AdminCap has key{
+    id: UID,
+}
+
 const ENotEnoughValue: u64 = 0;
 const ENotOwner: u64 = 1;
 const EZeroValue: u64 = 2;
 
-public fun create_marketplace<COIN>(ctx: &mut TxContext) {
+fun init(ctx: &mut TxContext) {
+    sui::transfer::transfer(AdminCap{id: object::new(ctx)}, ctx.sender());
+}
+
+public fun create_marketplace<COIN>(_: &AdminCap, ctx: &mut TxContext) {
     let id = object::new(ctx);
     let items = bag::new(ctx);
     let payments = table::new<address, Coin<COIN>>(ctx); 
