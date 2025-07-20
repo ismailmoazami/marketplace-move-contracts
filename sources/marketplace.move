@@ -1,7 +1,7 @@
 module marketplace::marketplace;
 
 use sui::bag::{Self, Bag};
-use sui::table::Table;
+use sui::table::{Self, Table};
 use sui::coin::Coin;
 use sui::dynamic_object_field as dof;
 
@@ -20,6 +20,15 @@ public struct Listing has key, store{
 const ENotEnoughValue: u64 = 0;
 const ENotOwner: u64 = 1;
 const EZeroValue: u64 = 2;
+
+public fun create_marketplace<COIN>(ctx: &mut TxContext) {
+    let id = object::new(ctx);
+    let items = bag::new(ctx);
+    let payments = table::new<address, Coin<COIN>>(ctx); 
+
+    let marketplace = Marketplace<COIN>{id: id, items: items, payments: payments};
+    sui::transfer::share_object(marketplace);
+}
 
 public fun list<T: key + store, COIN>(
     marketplace: &mut Marketplace<COIN>, 
